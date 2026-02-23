@@ -3,12 +3,10 @@ package main
 import (
 	"fmt"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
-	"syscall"
 
 	"gopkg.in/yaml.v3"
 )
@@ -346,17 +344,7 @@ func doSSH(cfg *Config, server string, extraArgs []string, dryRun bool) {
 		return
 	}
 
-	// exec into ssh so it fully replaces this process (proper TTY handling).
-	sshBin, err2 := exec.LookPath("ssh")
-	if err2 != nil {
-		fmt.Fprintf(os.Stderr, "error: ssh not found in PATH: %v\n", err2)
-		os.Exit(1)
-	}
-
-	if err2 := syscall.Exec(sshBin, sshArgs, os.Environ()); err2 != nil {
-		fmt.Fprintf(os.Stderr, "error: exec ssh: %v\n", err2)
-		os.Exit(1)
-	}
+	execInto("ssh", sshArgs)
 }
 
 // doSCP handles scp through CyberArk. Remote paths use the format :<server>:path
@@ -408,16 +396,7 @@ func doSCP(cfg *Config, args []string) {
 
 	fmt.Fprintf(os.Stderr, "→ %s\n", strings.Join(scpArgs, " "))
 
-	scpBin, err := exec.LookPath("scp")
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "error: scp not found in PATH: %v\n", err)
-		os.Exit(1)
-	}
-
-	if err := syscall.Exec(scpBin, scpArgs, os.Environ()); err != nil {
-		fmt.Fprintf(os.Stderr, "error: exec scp: %v\n", err)
-		os.Exit(1)
-	}
+	execInto("scp", scpArgs)
 }
 
 func main() {
