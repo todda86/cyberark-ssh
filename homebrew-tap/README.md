@@ -6,10 +6,10 @@ Private Homebrew tap for distributing `cyberark-ssh`.
 
 ### 1. Host this tap
 
-Push the `homebrew-tap/` directory to a Git repo on your internal server. The repo **must** be named `homebrew-cyberark` (the `homebrew-` prefix is required by Homebrew convention):
+Push the `homebrew-tap/` directory to a separate Git repo on GitHub. The repo **must** be named `homebrew-cyberark` (the `homebrew-` prefix is required by Homebrew convention):
 
 ```
-your-internal-git-server/twa7331/homebrew-cyberark
+https://github.com/todda86/homebrew-cyberark
 ```
 
 The repo structure should be:
@@ -20,36 +20,12 @@ homebrew-cyberark/
     └── cyberark-ssh.rb
 ```
 
-### 2. Host the source tarball
-
-Create a versioned tarball of the `cyberark-ssh` source and host it on your internal server. For example:
-
-```bash
-cd /Users/twa7331/dev/cyberark-ssh
-git archive --format=tar.gz --prefix=cyberark-ssh-1.0.0/ -o cyberark-ssh-1.0.0.tar.gz HEAD
-```
-
-Upload `cyberark-ssh-1.0.0.tar.gz` to your internal server and note the URL.
-
-Then get the SHA256:
-
-```bash
-shasum -a 256 cyberark-ssh-1.0.0.tar.gz
-```
-
-### 3. Update the formula
-
-Edit `Formula/cyberark-ssh.rb` and replace:
-- `url` — with the actual tarball URL
-- `sha256` — with the actual hash from step 2
-- `homepage` — with the repo URL
-
-### 4. Push the tap repo
+### 2. Push the tap repo
 
 ```bash
 cd homebrew-tap
 git init
-git remote add origin https://your-internal-git-server/twa7331/homebrew-cyberark.git
+git remote add origin https://github.com/todda86/homebrew-cyberark.git
 git add .
 git commit -m "Add cyberark-ssh formula"
 git push -u origin main
@@ -60,13 +36,13 @@ git push -u origin main
 ### Add the tap
 
 ```bash
-brew tap twa7331/cyberark https://your-internal-git-server/twa7331/homebrew-cyberark.git
+brew tap todda86/cyberark
 ```
 
 ### Install
 
 ```bash
-brew install twa7331/cyberark/cyberark-ssh
+brew install todda86/cyberark/cyberark-ssh
 ```
 
 ### Upgrade
@@ -79,21 +55,21 @@ brew upgrade cyberark-ssh
 
 ```bash
 brew uninstall cyberark-ssh
-brew untap twa7331/cyberark
+brew untap todda86/cyberark
 ```
 
 ## Releasing a new version
 
 1. Update the source, tag a release:
    ```bash
+   cd /Users/twa7331/dev/cyberark-ssh
    git tag v1.1.0
    git push --tags
    ```
 
-2. Create and upload a new tarball:
+2. Get the SHA256 of the new release tarball:
    ```bash
-   git archive --format=tar.gz --prefix=cyberark-ssh-1.1.0/ -o cyberark-ssh-1.1.0.tar.gz v1.1.0
-   # upload to your internal server
+   curl -sL https://github.com/todda86/cyberark-ssh/archive/refs/tags/v1.1.0.tar.gz | shasum -a 256
    ```
 
 3. Update the formula:
@@ -109,25 +85,3 @@ brew untap twa7331/cyberark
    brew update
    brew upgrade cyberark-ssh
    ```
-
-## Alternative: HEAD-only install (no tarballs)
-
-If you don't want to manage release tarballs, you can simplify the formula to always build from the latest commit. Replace the `url`/`sha256`/`version` lines with:
-
-```ruby
-head "https://your-internal-git-server/twa7331/cyberark-ssh.git", branch: "main"
-```
-
-Users would then install with:
-
-```bash
-brew install --HEAD twa7331/cyberark/cyberark-ssh
-```
-
-And upgrade with:
-
-```bash
-brew reinstall twa7331/cyberark/cyberark-ssh
-```
-
-The downside is no version tracking — `brew outdated` won't know when there are updates.
